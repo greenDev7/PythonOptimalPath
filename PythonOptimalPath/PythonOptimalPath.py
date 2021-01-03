@@ -1,29 +1,76 @@
 import math
+import asq
 from Point3D import Point3D
 from SurfaceFunctions import SinSquarePlusCosSquare as SC, Gaussian as G
 
 def GetSquareOfDistance(point, testedPoint, dy):
     """Возвращает относительный квадрат расстояния до проверяемой точки"""
-    return math.pow(point.z - testedPoint.z, 2.0) + testedPoint.PositionalParameter + dy * dy
+    return math.pow(point.z - testedPoint.z, 2.0) + testedPoint.PositionalParameter * dy * dy
 
 def GetTangentSquare(point, testedPoint, dx, dy):
     """Возвращает квадрат тангенса угла между точками"""
-    return math.pow(point.z - testedPoint.z, 2.0) / (dx ** 2 + testedPoint.PositionalParameter * dy * dy)
+    return math.pow(point.z - testedPoint.z, 2.0) / (dx * dx + testedPoint.PositionalParameter * dy * dy)
     
 def main():
     
-    # Формируем матрицу 3 на 4 как массив массивов, содержащей 3 массива в каждом из котором по 4 элемента
-    # и инициализируем все элементы матрицы нулевыми значениями
-    n = 3
-    m = 4
-    Matrix = [[0 for x in range(m)] for y in range(n)]
+    # Шаги сетки по осям Ox, Oy
+    dx = 0.1
+    dy = 0.1
 
-    for i in range(n):
-        for j in range(m):
-            Matrix[i][j] = 'sdf'
+    # Количество узлов сетки по осям Ox, Oy
+    N = 10
+    M = 5
 
-    print(SC(3.14159265358979, 0.0))
-    print(G(1, 2, 1, 1, 1, 1, 1))
+    # Формируем матрицу N на M как массив массивов и инициализируем нулевыми значениями
+    grid = [[0 for x in range(M)] for y in range(N)]
+    
+    # Формируем карту местности с помощью функции, задающей двумерную поверхность
+    for i in range(N):
+        for j in range(M):
+            grid[i][j] = SC(i * dx, j * dy)
+
+    # Координаты конца неизвестного маршрута, который необходимо продолжить
+    N_ = 9
+    M_ = 3   
+    
+    # Первая точка маршрута
+    currentOptimalPoint = Point3D(N_, M_, grid[N_][M_], 0)
+    # Временный список и список для хранения искомого оптимального пути
+    tempPnts, optimalPath = [], []
+
+    optimalPath.append(currentOptimalPoint)
+
+    for i in reversed(range(N_)):
+
+        M_ = currentOptimalPoint.M
+
+        if (M_ == 0):
+            tempPnts.append(Point3D(i, 0, grid[i][0], 0))
+            tempPnts.append(Point3D(i, 1, grid[i][1], 1))
+        elif (M_ == M - 1):
+            tempPnts.append(Point3D(i, M - 1, grid[i][M - 1], 0))
+            tempPnts.append(Point3D(i, M - 2, grid[i][M - 2], 1))
+        else:
+            tempPnts.append(Point3D(i, M_ - 1, grid[i][M_ - 1], 1))
+            tempPnts.append(Point3D(i, M_, grid[i][M_], 0))
+            tempPnts.append(Point3D(i, M_ + 1, grid[i][M_ + 1], 1))
+
+        indexOfMin = 0
+        minDistancePlusTangentSquare = GetSquareOfDistance(currentOptimalPoint, tempPnts[indexOfMin], dy) + GetTangentSquare(currentOptimalPoint, tempPnts[indexOfMin], dx, dy)        
+
+        for k in range(1, len(tempPnts)):
+            temp = GetSquareOfDistance(currentOptimalPoint, tempPnts[k], dy) + GetTangentSquare(currentOptimalPoint, tempPnts[k], dx, dy)
+            if (temp < minDistancePlusTangentSquare):
+                indexOfMin = k
+                minDistancePlusTangentSquare = temp
+
+        currentOptimalPoint = tempPnts[indexOfMin]
+        optimalPath.append(currentOptimalPoint)
+        tempPnts.clear()      
+
+    d = [p.z for p in optimalPath]
+    for p in d:
+        print(p)
     
 if __name__ == "__main__":
     main()

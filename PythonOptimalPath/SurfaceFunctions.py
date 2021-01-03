@@ -2,7 +2,7 @@ import math
 
 # Возвращает сумму квадрата синуса первого аргумента и квадрата косинуса второго аргумента
 # x - первый аргумент
-# y - второй аргумент
+# y - второй аргумен
 def SinSquarePlusCosSquare(x, y):
     return math.sin(x) * math.sin(x) + math.cos(y) * math.cos(y)
 

@@ -1,5 +1,4 @@
 import math
-import asq
 from Point3D import Point3D
 from SurfaceFunctions import SinSquarePlusCosSquare as SC, Gaussian as G
 
@@ -14,8 +13,7 @@ def GetTangentSquare(point, testedPoint, dx, dy):
 def main():
     
     # Шаги сетки по осям Ox, Oy
-    dx = 0.1
-    dy = 0.1
+    dx, dy = 0.1, 0.1
 
     # Количество узлов сетки по осям Ox, Oy
     N = 10
@@ -38,10 +36,11 @@ def main():
     # Временный список и список для хранения искомого оптимального пути
     tempPnts, optimalPath = [], []
 
+    # Добавляем в список с искомым маршрутом первую точку, которая уже известна
     optimalPath.append(currentOptimalPoint)
 
+    # Основной цикл поиска оптимального пути
     for i in reversed(range(N_)):
-
         M_ = currentOptimalPoint.M
 
         if (M_ == 0):
@@ -66,11 +65,15 @@ def main():
 
         currentOptimalPoint = tempPnts[indexOfMin]
         optimalPath.append(currentOptimalPoint)
-        tempPnts.clear()      
+        tempPnts.clear()     
 
-    d = [p.z for p in optimalPath]
-    for p in d:
-        print(p)
+    # Записываем данные в текстовый файл
+    fileName = "C:\\Users\\Admin\\Documents\\optimalPathPython.txt"
+    with open(fileName, "w") as file:
+        for point in optimalPath:
+            file.write(str(round(point.N * dx, 2)) + "   " + str(round(point.M * dy, 2)) + "   " + str(point.z) + "\n")
+
+    file.close()
     
 if __name__ == "__main__":
     main()
